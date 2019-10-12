@@ -41,7 +41,7 @@ let sourceEndpoint = {
     isSource: true,
     uniqueEndpoint: false,
     maxConnections: -1,
-    connector: [ "Flowchart", {  gap: 5, cornerRadius: 5, alwaysRespectStubs: true } ],
+    connector: [ "Flowchart", { gap: 5, cornerRadius: 5, alwaysRespectStubs: true } ],
     connectorStyle: connectorPaintStyle,
     hoverPaintStyle: endpointHoverStyle,
     connectorHoverStyle: connectorHoverStyle,

@@ -12,9 +12,6 @@
       />
       <p class="name">{{data.name}}</p>
       <p class="type">{{data.type}}</p>
-      <!-- <p>
-        <span>{{data.time}}</span>
-      </p>-->
     </div>
     <div :id="id + '-anchor'" class="anchor" :class="{hover: isShowAnchor}"></div>
   </dir>
@@ -38,6 +35,13 @@ export default {
         left: this.data.position.x + "px",
         top: this.data.position.y + "px"
       };
+    }
+  },
+  mounted() {
+    let div = document.getElementById(this.id);
+    div.onmouseup  = (e) => {
+      this.data.position.x = div.style.left.replace(/\D/g, '')
+      this.data.position.y = div.style.top.replace(/\D/g, '')
     }
   }
 };

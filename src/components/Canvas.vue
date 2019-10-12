@@ -79,8 +79,12 @@ export default {
     this.elements = JSON.parse(localStorage.getItem("elements"));
   },
   watch: {
-    elements (val) {
-        console.log(val)
+    elements: {
+        handler(newVal) {
+            console.log('深度监听', newVal)
+            localStorage.setItem("elements", JSON.stringify(newVal));
+        },
+        deep: true
     },
     dependencies(val) {
       this.DrawTool.delConnects()
