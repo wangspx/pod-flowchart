@@ -14,120 +14,80 @@ export default {
   data() {
     return {
       DrawTool: null,
-      elements: [
-        {
-          name: "web",
-          type: "pod",
-          status: "running",
-          time: "2019-10-9 17:50:26",
-          dependencies: ["nginx"],
-          position: {
-            x: 94,
-            y: 211
-          }
-        },
-        {
-          name: "nginx",
-          type: "pod",
-          status: "running",
-          time: "2019-10-9 17:50:26",
-          dependencies: ["app1", "app2"],
-          position: {
-            x: 310,
-            y: 211
-          }
-        },
-        {
-          name: "nginx1",
-          type: "pod",
-          status: "running",
-          time: "2019-10-9 17:50:26",
-          dependencies: [],
-          position: {
-            x: 310,
-            y: 511
-          }
-        },
-        {
-          name: "app1",
-          type: "deploy",
-          status: "running",
-          dependencies: ["redis", "mysql"],
-          time: "2019-10-9 17:50:26",
-          position: {
-            x: 583,
-            y: 330
-          }
-        },
-        {
-          name: "app2",
-          type: "deploy",
-          status: "running",
-          dependencies: ["redis", "mysql"],
-          time: "2019-10-9 17:50:26",
-          position: {
-            x: 583,
-            y: 133
-          }
-        },
-        {
-          name: "redis",
-          type: "deploy",
-          status: "running",
-          dependencies: ["fs"],
-          time: "2019-10-9 17:50:26",
-          position: {
-            x: 859,
-            y: 452
-          }
-        },
-        {
-          name: "mysql",
-          type: "deploy",
-          status: "failed",
-          dependencies: ["fs"],
-          time: "2019-10-9 17:50:26",
-          position: {
-            x: 857,
-            y: 108
-          }
-        },
-        {
-          name: "fs",
-          type: "volumes",
-          status: "pending",
-          time: "2019-10-9 17:50:26",
-          dependencies: [],
-          position: {
-            x: 1111,
-            y: 211
-          }
-        }
-      ]
+      elements: []
     };
+  },
+  computed: {
+    dependencies() {
+      let arr = [];
+      let that = this;
+      this.elements.forEach((item, index1) => {
+        item.dependencies.forEach((i, index2) => {
+          let color = that.getSatusColor(that.getElement(i.name).status);
+          arr.push({
+            source: item.name + "-anchor",
+            target: i.name + "-anchor",
+            info: {
+              label: i.label,
+              color: color,
+              callback: () => {
+                // alert("2222")
+                // item.dependencies.splice(index, 1)
+                that.delDependencuy(index1, index2);
+              }
+            }
+          });
+        });
+      });
+      return arr;
+    }
   },
   components: {
     Element: element
   },
   methods: {
+    delDependencuy(index, offset) {
+      this.elements[index].dependencies.splice(offset, 1);
+    },
     getElement(id) {
-        return  this.elements.filter(item => {
-            return item.name === id
-        })[0] || {};
+      return (
+        this.elements.filter(item => {
+          return item.name === id;
+        })[0] || {}
+      );
     },
     getSatusColor(val) {
-        let color;
-        switch (val) {
-            case "pedding" : color = "#bfbfbf"; break;
-            case "running" : color = "#61B7CF"; break;
-            case "failed" : color = "red"; break;
-            default: color = "#bfbfbf"; 
-        }
-        return color;
+      let color;
+      switch (val) {
+        case "pedding":
+          color = "#bfbfbf";
+          break;
+        case "running":
+          color = "#61B7CF";
+          break;
+        case "failed":
+          color = "red";
+          break;
+        default:
+          color = "#bfbfbf";
+      }
+      return color;
     }
   },
   created() {
     this.DrawTool = new DrawTool("canvas");
+    this.elements = JSON.parse(localStorage.getItem("elements"));
+  },
+  watch: {
+    elements (val) {
+        console.log(val)
+    },
+    dependencies(val) {
+      this.DrawTool.delConnects()
+      val.forEach(item => {
+        this.DrawTool.addConnects(item.source, item.target, item.info);
+      });
+    }
   },
   mounted() {
     this.DrawTool.addDraggable(".canvas .element");
@@ -138,22 +98,7 @@ export default {
         "in" + this.elements[i].name,
         "target"
       );
-      this.DrawTool.addEndpoints(
-        this.elements[i].name,
-        this.elements[i].name
-      );
-    }
-
-    for (let i = 0; i < this.elements.length; i++) {
-      this.elements[i].dependencies.forEach(item => {});
-
-      this.DrawTool.addConnects(
-        this.elements[i].name + "-anchor",
-        this.elements[i].dependencies.map(val => {
-          let status = this.getElement(val).status
-          return {name : val + "-anchor", color: this.getSatusColor(status)};
-        })
-      );
+      this.DrawTool.addEndpoints(this.elements[i].name, this.elements[i].name);
     }
   }
 };

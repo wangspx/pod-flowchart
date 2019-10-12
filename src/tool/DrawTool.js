@@ -8,28 +8,11 @@ let connectorPaintStyle = {
     outlineWidth: 1,
 }
 
-let peddingPaintStyle = {
-    strokeWidth: 1,
-    stroke: "red",
-    joinstyle: "round",
-    outlineStroke: "white",
-    outlineWidth: 1,
-}
-
-let failedPaintStyle = {
-    strokeWidth: 1,
-    stroke: "red",
-    joinstyle: "round",
-    outlineStroke: "white",
-    outlineWidth: 1,
-}
-
 let connectorHoverStyle = {
     strokeWidth: 2,
     stroke: "#216477",
     outlineWidth: 2,
     outlineStroke: "white",
-    zIndex: 9999
 }
 let endpointHoverStyle = {
     fill: "#216477",
@@ -58,7 +41,7 @@ let sourceEndpoint = {
     isSource: true,
     uniqueEndpoint: false,
     maxConnections: -1,
-    connector: [ "Flowchart", {  gap: 0, cornerRadius: 3} ],
+    connector: [ "Flowchart", {  gap: 5, cornerRadius: 5, alwaysRespectStubs: true } ],
     connectorStyle: connectorPaintStyle,
     hoverPaintStyle: endpointHoverStyle,
     connectorHoverStyle: connectorHoverStyle,
@@ -103,42 +86,40 @@ class DrawTool {
         this.instance.draggable(jsPlumb.getSelector(target));
     }
 
-    addEndpoints(target, uuid, type) {
+    addEndpoints(target, type) {
         let style = type === "target" ? targetEndpoint : sourceEndpoint
         // let anchors = type === "target" ? ["Left","Right","Top","Bottom"] : ["Right","Left","Top","Bottom"]
-        this.instance.addEndpoint(target, style, { anchor: ["Right","Left","Top","Bottom"], uuid: uuid});
+        this.instance.addEndpoint(target, style, { anchor: [0, 0, 0, -1] });
 
         this.instance.makeSource(target + "-anchor", style);
         this.instance.makeTarget(target + "-anchor", style);
-
-        this.instance.bind("connection", function (connInfo, originalEvent) {
-            let connection = connInfo.connection
-
-            connection.getOverlay("label").setLabel(connection.sourceId  + "-" + connection.targetId + '  <i class="fa fa-trash-o fa-lg"></i>');
-
-            connection.getOverlay("label").bind("click", (c)=>{
-                jsPlumb.deleteConnection(connection)
-            })
-        });
     }
 
-    addConnects(source, target) {
-        this.instance.batch(()=>{
-            for(let i = 0; i < target.length; i++) {
-                let connection = this.instance.connect({
-                    source:source,
-                    target:target[i].name,
-                    // uuids: [source, target[i]]
+    delConnects() {
+        this.instance.deleteEveryConnection()
+    }
+
+    addConnects(source, target, config) {
+        let connection = this.instance.connect({
+            source:source,
+            target:target,
+        })
+
+        if (config.color) {
+            let style = JSON.parse(JSON.stringify(connection.getPaintStyle()))
+            style.stroke = config.color
+            connection.setPaintStyle(style)
+        }
+
+        if(config.label) {
+            connection.getOverlay("label").setLabel(config.label + ' <i class="fa fa-trash-o fa-lg"></i>');
+
+            if(config.callback && typeof(config.callback) === "function") {
+                connection.getOverlay("label").bind("click", (c)=>{
+                    config.callback(c);
                 })
-                if (target[i].color) {
-                    let style = JSON.parse(JSON.stringify(connection.getPaintStyle()))
-                    console.log(style)
-                    console.log(new Date(),target[i].color)
-                    style.stroke = target[i].color
-                    connection.setPaintStyle(style)
-                }
             }
-        });
+        }
     }
 }
 
