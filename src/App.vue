@@ -52,13 +52,18 @@ body {
 }
 
 .jtk-connector.jtk-hover {
+  display: inline;
   z-index: 96;
 }
 
 .jtk-endpoint.jtk-endpoint-anchor.jtk-draggable.jtk-droppable {
   cursor: crosshair;
   z-index: 100;
-  /* opacity: 0; */
+  opacity: 0;
+}
+
+.jtk-endpoint.jtk-endpoint-anchor.jtk-draggable.jtk-droppable.jtk-hover {
+  opacity: 100;
 }
 
 .aLabel i {

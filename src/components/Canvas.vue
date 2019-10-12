@@ -38,6 +38,17 @@ export default {
           }
         },
         {
+          name: "nginx1",
+          type: "pod",
+          status: "running",
+          time: "2019-10-9 17:50:26",
+          dependencies: [],
+          position: {
+            x: 310,
+            y: 511
+          }
+        },
+        {
           name: "app1",
           type: "deploy",
           status: "running",
@@ -98,6 +109,23 @@ export default {
   components: {
     Element: element
   },
+  methods: {
+    getElement(id) {
+        return  this.elements.filter(item => {
+            return item.name === id
+        })[0] || {};
+    },
+    getSatusColor(val) {
+        let color;
+        switch (val) {
+            case "pedding" : color = "#bfbfbf"; break;
+            case "running" : color = "#61B7CF"; break;
+            case "failed" : color = "red"; break;
+            default: color = "#bfbfbf"; 
+        }
+        return color;
+    }
+  },
   created() {
     this.DrawTool = new DrawTool("canvas");
   },
@@ -105,16 +133,29 @@ export default {
     this.DrawTool.addDraggable(".canvas .element");
 
     for (let i = 0; i < this.elements.length; i++) {
-      this.DrawTool.addEndpoints(this.elements[i].name, "in" + this.elements[i].name, "target");
-      this.DrawTool.addEndpoints(this.elements[i].name, "out" + this.elements[i].name);
-    }
-    for (let i = 0; i < this.elements.length; i++) {
-      this.DrawTool.addConnects(
-        "out" + this.elements[i].name,
-        this.elements[i].dependencies.map(val => { return "in" + val})
+      this.DrawTool.addEndpoints(
+        this.elements[i].name,
+        "in" + this.elements[i].name,
+        "target"
+      );
+      this.DrawTool.addEndpoints(
+        this.elements[i].name,
+        this.elements[i].name
       );
     }
-  },
+
+    for (let i = 0; i < this.elements.length; i++) {
+      this.elements[i].dependencies.forEach(item => {});
+
+      this.DrawTool.addConnects(
+        this.elements[i].name + "-anchor",
+        this.elements[i].dependencies.map(val => {
+          let status = this.getElement(val).status
+          return {name : val + "-anchor", color: this.getSatusColor(status)};
+        })
+      );
+    }
+  }
 };
 </script>
 
@@ -132,5 +173,7 @@ export default {
   display: inline-block;
 
   position: relative;
+
+  z-index: 0;
 }
 </style>
